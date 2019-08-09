@@ -6,6 +6,7 @@ import com.liferay.portal.kernel.events.LifecycleAction;
 import com.liferay.portal.kernel.events.LifecycleEvent;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import org.osgi.service.component.annotations.Component;
 
 import javax.servlet.http.Cookie;
@@ -51,6 +52,7 @@ public class UtmService implements LifecycleAction {
 				for (String param : Collections.list(request.getParameterNames())) {
 					if (param.toLowerCase().startsWith("utm_")) {
 						//TODO possible bug with same utm_ params??
+						System.out.println(param + ":" + request.getParameter(param));
 						Cookie cookie = new Cookie(param, request.getParameter(param));
 						response.addCookie(cookie);
 						containsUTM = true;
@@ -58,10 +60,8 @@ public class UtmService implements LifecycleAction {
 				}
 
 				if (containsUTM) {
-					StringBuilder requestURL = new StringBuilder(request.getRequestURL().toString());
-					String queryString = request.getQueryString() + "&" + PROCESSED_UTM + "=1";
-					response.sendRedirect(requestURL.append('?').append(queryString).toString());
-					//TODO possible bug need to add path??
+					String currentUrl = PortalUtil.getCurrentCompleteURL(request);
+					response.sendRedirect(currentUrl  + "&" + PROCESSED_UTM + "=1");
 				}
 			}
 		} catch (IOException e) {
